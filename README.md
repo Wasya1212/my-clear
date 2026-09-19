@@ -1,3 +1,1 @@
 # my-clear
-
-Hello world
