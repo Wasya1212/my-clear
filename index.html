@@ -1,210 +1,85 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Візуалізація Динамічного Програмування (Maximal Square)</title>
-    <style>
-        body {
-            font-family: monospace;
-            background-color: #121212;
-            color: #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        h2 { margin-bottom: 5px; }
-        #info {
-            font-size: 16px;
-            color: #4CAF50;
-            margin-bottom: 20px;
-            min-height: 24px;
-        }
-        .container {
-            display: flex;
-            gap: 40px;
-        }
-        .grid-box {
-            text-align: center;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(5, 45px);
-            gap: 5px;
-            background: #1e1e1e;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-        .cell {
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #2a2a2a;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-        .cell.active {
-            background-color: #ff9800;
-            color: #000;
-        }
-        .cell.neighbor {
-            background-color: #2196F3;
-            color: #fff;
-        }
-        .cell.one { color: #fff; }
-        .cell.zero { color: #555; }
-        
-        #controls {
-            margin-top: 25px;
-        }
-        button {
-            background: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        button:hover { background: #45a049; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coming Soon</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(99, 102, 241, 0.28), transparent 35%),
+        linear-gradient(135deg, #0f172a, #111827 55%, #020617);
+      color: #f8fafc;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(100%, 640px);
+      text-align: center;
+      padding: 56px 32px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.18);
+      color: #c7d2fe;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.1;
+    }
+
+    p {
+      margin: 0 auto;
+      max-width: 480px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: #cbd5e1;
+    }
+
+    .status {
+      margin-top: 28px;
+      color: #93c5fd;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
-
-    <h2>Візуалізація: Як заповнюється DP-таблиця</h2>
-    <div id="info">Натисни «Запустити анімацію»</div>
-
-    <div class="container">
-        <div class="grid-box">
-            <h3>Вхідна матриця</h3>
-            <div id="matrix-grid" class="grid" style="grid-template-columns: repeat(5, 45px);"></div>
-        </div>
-        <div class="grid-box">
-            <h3>DP-таблиця (результати)</h3>
-            <div id="dp-grid" class="grid" style="grid-template-columns: repeat(5, 45px);"></div>
-        </div>
-    </div>
-
-    <div id="controls">
-        <button onclick="startAnimation()">Запустити знову</button>
-    </div>
-
-<script>
-    const matrix = [
-    [0, 1, 1, 0, 1],
-    [1, 1, 0, 1, 0],
-    [0, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 0],
-    [0, 1, 1, 1, 1]
-];
-
-    const n = matrix.length;
-    const m = matrix[0].length;
-    let dp = Array.from({ length: n }, () => Array(m).fill(0));
-
-    function renderGrids(activeI = -1, activeJ = -1) {
-        const mGrid = document.getElementById('matrix-grid');
-        const dpGrid = document.getElementById('dp-grid');
-        
-        mGrid.style.gridTemplateColumns = `repeat(${m}, 45px)`;
-        dpGrid.style.gridTemplateColumns = `repeat(${m}, 45px)`;
-
-        mGrid.innerHTML = '';
-        dpGrid.innerHTML = '';
-
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < m; j++) {
-                // Вхідна матриця
-                const mCell = document.createElement('div');
-                mCell.className = `cell ${matrix[i][j] === 1 ? 'one' : 'zero'}`;
-                if (i === activeI && j === activeJ) mCell.classList.add('active');
-                else if (
-                    (i === activeI - 1 && j === activeJ) ||
-                    (i === activeI && j === activeJ - 1) ||
-                    (i === activeI - 1 && j === activeJ - 1)
-                ) {
-                    if (activeI !== -1) mCell.classList.add('neighbor');
-                }
-                mCell.textContent = matrix[i][j];
-                mGrid.appendChild(mCell);
-
-                // DP матриця
-                const dpCell = document.createElement('div');
-                dpCell.className = 'cell';
-                if (i === activeI && j === activeJ) dpCell.classList.add('active');
-                dpCell.textContent = dp[i][j];
-                dpGrid.appendChild(dpCell);
-            }
-        }
-    }
-
-    let intervalId = null;
-
-    function startAnimation() {
-        if (intervalId) clearInterval(intervalId);
-
-        // Скидаємо DP
-        dp = Array.from({ length: n }, () => Array(m).fill(0));
-        let i = 0, j = 0;
-        let max_num = 0;
-
-        document.getElementById('info').textContent = "Починаємо сканування...";
-        renderGrids();
-
-        intervalId = setInterval(() => {
-            if (i >= n) {
-                clearInterval(intervalId);
-                document.getElementById('info').textContent = `Кінець! Максимальна сторона: ${max_num}, Площа: ${max_num * max_num}`;
-                renderGrids(-1, -1);
-                return;
-            }
-
-            const val = matrix[i][j];
-            let infoText = `Рядок ${i}, Стовпець ${j}: значення у матриці = ${val}. `;
-
-            if (val === 1) {
-                let left = 0, right = 0, diag = 0;
-                if (i > 0) left = dp[i - 1][j];
-                if (j > 0) right = dp[i][j - 1];
-                if (i > 0 && j > 0) diag = dp[i - 1][j - 1];
-
-                if (i > 0 || j > 0) {
-                    let mn = Math.min(left, right, diag);
-                    dp[i][j] = mn + 1;
-                    infoText += `Сусіди [зверху:${left}, зліва:${right}, діаг:${diag}]. Мін = ${mn} + 1 = ${dp[i][j]}`;
-                } else {
-                    dp[i][j] = 1;
-                    infoText += `Крайня ліва верхня точка -> записуємо 1.`;
-                }
-                max_num = Math.max(max_num, dp[i][j]);
-            } else {
-                dp[i][j] = 0;
-                infoText += `Тут 0, тому квадрат не утворюється (записуємо 0).`;
-            }
-
-            document.getElementById('info').textContent = infoText;
-            renderGrids(i, j);
-
-            // Переходимо до наступної клітинки
-            j++;
-            if (j >= m) {
-                j = 0;
-                i++;
-            }
-        }, 1000); // 1000 мс = рівно 1 секунда паузи між кадрами
-    }
-
-    // Первинний рендер
-    renderGrids();
-</script>
-
+  <main class="card">
+    <div class="badge">Launching Soon</div>
+    <h1>Something awesome is on the way</h1>
+    <p>
+      We’re putting the finishing touches on our new experience. Check back soon
+      for the official launch.
+    </p>
+    <div class="status">Coming Soon</div>
+  </main>
 </body>
 </html>
